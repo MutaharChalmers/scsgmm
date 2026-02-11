@@ -94,7 +94,7 @@ class GaussianMixture(skm.GaussianMixture):
         ix = random_state.multinomial(1, ps).argmax(axis=1)
 
         # Conditional mean and covariance matrices based on Schur complement
-        BCinv = B @ np.linalg.inv(C + lam*np.eye(len(dims_cond)))
+        BCinv = np.linalg.solve(C, B.swapaxes(-1, -2)).swapaxes(-1, -2)
         ccovs = A - BCinv @ np.transpose(B, (0,2,1))
         deltas = (x_cond[:,None] - self.means_[:,dims_cond])[:,:,:,None]
         cmus = self.means_[:,dims_samp] + np.squeeze(BCinv @ deltas, -1)
@@ -335,9 +335,8 @@ class SCSGMM():
             Inital values to be used in the simulation. `X0` must be 3D with
             shape (# batches, model order, # endogenous features).
         Xx : ndarray, optional
-            Exogenous forcing to be used in the simulation. If using
-            different forcings for each batch, `Xx` must be 3D with shape
-            (# batches, time steps, # exogenous features).
+            Exogenous forcing to be used in the simulation. `Xx` must be 3D
+            with shape (# batches, time steps, # exogenous features).
         periods : ndarray, optional
             PeriodID for each time step, allowing different models to be
             used for subsets of the data. Must be length `Nt`.
